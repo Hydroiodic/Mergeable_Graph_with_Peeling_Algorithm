@@ -32,7 +32,9 @@ int main()
 		case 'D': case 'd':
 			// delete edge
 			std::cin >> from >> to;
-			test_graph[index].deleteEdge(from, to);
+			if (!test_graph[index].deleteEdge(from, to)) {
+				std::cout << "delete failed\n";
+			}
 			break;
 
 		case 'P': case 'p':

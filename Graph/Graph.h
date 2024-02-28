@@ -15,6 +15,7 @@
 
 namespace Graph
 {
+	// 'struct Edge' defines the structure to store an edge
 	template <typename vertex_type, typename edge_type>
 	struct Edge
 	{
@@ -45,12 +46,16 @@ namespace Graph
 		std::vector<Edge<vertex_type, edge_type>> edges;
 		std::vector<size_t> tail_index;
 
-		// methods used inside the data structure
+		// add an edge from 'from' to 'to' into the vector 'edges'
 		bool addEdgeInner(size_t from, size_t to, const edge_type& value);
 
 		// get the next index to insert
 		std::vector<size_t> next_index;
 		size_t nextEdgeIndex();
+
+		// return the index of the edge from 'from' to 'to'
+		std::pair<size_t, size_t> getEdgeIndexByKey(const vertex_type& from, const vertex_type& to) const;
+		std::pair<size_t, size_t> getEdgeIndexByIndex(size_t from_index, size_t to_index) const;
 
 	public:
 		// the construction and destruction functions
@@ -58,7 +63,8 @@ namespace Graph
 		~Graph();
 
 		// the basic method of a graph
-		bool addEdge(const vertex_type& from, const vertex_type& to, const edge_type& value);
+		bool addEdge(const vertex_type& from, const vertex_type& to, 
+			const edge_type& value, bool double_side = true);
 		bool deleteEdge(const vertex_type& from, const vertex_type& to);
 
 		// merge other_graph into the current graph
@@ -75,4 +81,5 @@ namespace Graph
 #include "Graph.cpp"
 
 // these types may change to meet our needs
+// ATTENTION! the first parameter-type must be hashable!
 using graph_t = Graph::Graph<uint64_t, std::string>;
