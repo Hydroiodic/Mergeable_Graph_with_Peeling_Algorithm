@@ -6,7 +6,7 @@
 
 #include "Graph.h"
 
-namespace Graph {
+namespace graph {
 
 	/***************** Below are private functions ******************/
 

@@ -13,7 +13,7 @@
 
 #define DEBUG
 
-namespace Graph
+namespace graph
 {
 	// 'struct Edge' defines the structure to store an edge
 	template <typename vertex_type, typename edge_type>
@@ -82,4 +82,4 @@ namespace Graph
 
 // these types may change to meet our needs
 // ATTENTION! the first parameter-type must be hashable!
-using graph_t = Graph::Graph<uint64_t, std::string>;
+using graph_t = graph::Graph<uint64_t, std::string>;
