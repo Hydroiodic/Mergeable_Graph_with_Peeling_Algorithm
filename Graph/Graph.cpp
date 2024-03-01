@@ -178,6 +178,9 @@ namespace graph {
 		// get the indexes of both from and to
 		size_t index_from = getKeyIndex(from), index_to = getKeyIndex(to);
 
+		// no self-circle allowed
+		if (index_from == index_to) return false;
+
 		// if return_value is true, the edge has been added correctly
 		bool return_value = false;
 
@@ -246,8 +249,7 @@ namespace graph {
 			}
 
 			// all edges from tail
-			for (size_t cur_index = tail; cur_index != -1;
-				cur_index = edges[cur_index].prev) {
+			for (size_t cur_index = tail; cur_index != -1; cur_index = edges[cur_index].prev) {
 				// print the details of the edge
 				std::cout << "The edge from " << index_to_key[edges[cur_index].from] << " to "
 					<< index_to_key[edges[cur_index].to] << " values " << edges[cur_index].value << '\n';
@@ -309,6 +311,33 @@ namespace graph {
 				heap.modifyNode(edges[cur_index].to, heap.inquire(edges[cur_index].to) - 1);
 			}
 		}
+	}
+
+	template <typename vertex_type, typename edge_type>
+	Graph<vertex_type, edge_type> Graph<vertex_type, edge_type>::getKCoreGraph(size_t k) const {
+		// find all nodes that has a larger core_number than k
+		std::unordered_set<size_t> needed_nodes;
+		for (int i = 0; i < core_numbers.size(); ++i) {
+			if (core_numbers[i] >= k) {
+				needed_nodes.insert(i);
+			}
+		}
+
+		// add all edges between the vertexes above into a graph
+		Graph<vertex_type, edge_type> new_graph;
+		for (size_t index : needed_nodes) {
+			for (size_t cur_index = tail_index[index]; cur_index != -1; 
+				cur_index = edges[cur_index].prev) {
+				// if the other end of the edge is in the set above, then add it
+				if (needed_nodes.find(edges[cur_index].to) != needed_nodes.end()) {
+					new_graph.addEdge(index_to_key[index], index_to_key[edges[cur_index].to], 
+						edges[cur_index].value, false);
+				}
+			}
+		}
+
+		// here we could return the newly created graph using std::move to decrease copy-cost
+		return new_graph;
 	}
 
 } // namespace graph

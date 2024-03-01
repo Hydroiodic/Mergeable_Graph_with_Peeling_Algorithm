@@ -26,6 +26,50 @@ bool redirectStdin(const char* file_name) {
 	}
 }
 
+void addEdge(graph_t* test_graph, size_t index, 
+	size_t from, size_t to, std::string value) {
+	if (test_graph[index].addEdge(from, to, value)) {
+		std::cout << "Add edges from " << from << " to " << to <<
+			" or from " << to << " to " << to << " successfully!\n";
+	}
+	else {
+		std::cout << "Failed to add edges both from " << from << " to " << to <<
+			" and from " << to << " to " << to << ".\n";
+	}
+}
+
+void deleteEdge(graph_t* test_graph, size_t index, size_t from, size_t to) {
+	if (test_graph[index].deleteEdge(from, to)) {
+		std::cout << "Delete edges from " << from << " to " << to <<
+			" or from " << to << " to " << to << " successfully!\n";
+	}
+	else {
+		std::cout << "Failed to delete edges both from " << from << " to " << to <<
+			" and from " << to << " to " << to << ".\n";
+	}
+}
+
+void peeling(graph_t* test_graph, size_t index) {
+	test_graph[index].peeling();
+	std::cout << "Apply Peeling Algorithm to calculate core_number in graph " << index << ".\n";
+}
+
+void mergeGraph(graph_t* test_graph, size_t index, size_t other_index) {
+	test_graph[index].mergeGraph(test_graph[other_index]);
+	std::cout << "Merge graph " << other_index << " into graph " << index << ".\n";
+}
+
+void printGraph(graph_t* test_graph, size_t index) {
+	std::cout << "Below is the information about graph " << index << ":\n";
+	test_graph[index].printGraph();
+}
+
+void getKCoreGraph(graph_t* test_graph, size_t index, size_t other_index, size_t k) {
+	std::cout << "Assign the " << k << "-core sub-graph of graph " 
+		<< index << " into graph " << other_index << ".\n";
+	test_graph[other_index] = test_graph[index].getKCoreGraph(k);
+}
+
 int main(int argc, char* argv[])
 {
 	// command-line parameters
@@ -60,40 +104,47 @@ int main(int argc, char* argv[])
 		}
 
 		// keys and value
-		uint64_t from, to;
+		uint64_t from, to, k;
 		std::string value;
 
 		switch (op) {
 		case 'A': case 'a':
 			// add edge
 			std::cin >> from >> to >> value;
-			test_graph[index].addEdge(from, to, value);
+			addEdge(test_graph, index, from, to, value);
 			break;
 
 		case 'D': case 'd':
 			// delete edge
 			std::cin >> from >> to;
-			if (!test_graph[index].deleteEdge(from, to)) {
-				std::cout << "delete failed\n";
-			}
+			deleteEdge(test_graph, index, from, to);
 			break;
 
-#ifdef DEBUG
-		case 'P': case 'p':
-			// print all edges and the core_number of all vertexes
-			test_graph[index].peeling();
-			test_graph[index].printGraph();
+		case 'G': case 'g':
+			// apply Peeling Algorithm to calculate core_numbers
+			peeling(test_graph, index);
 			break;
-#endif // DEBUG
 
 		case 'M': case'm':
 			// merge graphs
 			std::cin >> other_index;
-			test_graph[index].mergeGraph(test_graph[other_index]);
+			mergeGraph(test_graph, index, other_index);
+			break;
+
+		case 'P': case 'p':
+			// print all edges and the core_number of all vertexes
+			printGraph(test_graph, index);
 			break;
 
 		case 'Q': case 'q':
 			goto End;
+
+		case 'S': case 's':
+			// assign the k-core sub-graph of graph 'index' to 'other_index'
+			// ATTENTION! please use "G" to calculate first and then use this operation
+			std::cin >> other_index >> k;
+			getKCoreGraph(test_graph, index, other_index, k);
+			break;
 
 		default:
 			break;

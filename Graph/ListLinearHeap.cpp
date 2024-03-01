@@ -1,3 +1,6 @@
+// ListLinearHeap.cpp : include implementations of all methods of the class ListLinearHeap
+//
+
 #include "ListLinearHeap.h"
 
 namespace utils {

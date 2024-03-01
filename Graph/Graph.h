@@ -88,8 +88,11 @@ namespace graph
 		std::vector<size_t> degrees;
 
 	public:
+		// use Peeling Algorithm to calculate core_number of all vertexes
 		void peeling();
 
+		// use the calculated core_numbers to find the k-core sub-graph
+		Graph getKCoreGraph(size_t k) const;
 	};
 } // namespace graph
 
