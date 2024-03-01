@@ -5,6 +5,7 @@
 
 namespace utils {
 
+	// ListLinearHeap::ListLinearHeap, allocate some spaces when creating
 	ListLinearHeap::ListLinearHeap(size_t N) : total_number(N + 1) {
 		// actually the maximum possible degree of a node is N - 1 
 		//     (repeated edge and self-circled edge not considered)
@@ -13,12 +14,14 @@ namespace utils {
 		this->size_of_each_list = new size_t[N + 1]{};
 	}
 
+	// ListLinearHeap::~ListLinearHeap, release the space allocated previously
 	ListLinearHeap::~ListLinearHeap() {
 		delete [] this->heads;
 		delete [] this->nodes;
 		delete [] this->size_of_each_list;
 	}
 
+	// ListLinearHeap::inquire, return left-degree of the 'no'-th node
 	size_t ListLinearHeap::inquire(size_t no) const {
 		// make sure the memory access is safe
 		assert(no < total_number);
@@ -26,6 +29,8 @@ namespace utils {
 		return nodes[no].key;
 	}
 
+	// ListLinearHeap::addNode, add a node with the index of 'no' and 
+	//     degree of 'degree' into this data structure
 	void ListLinearHeap::addNode(size_t no, size_t degree) {
 		// make sure the index is correct
 		assert(no < total_number);
@@ -51,6 +56,7 @@ namespace utils {
 		}
 	}
 
+	// ListLinearHeap::removeNode, remove the node with the index of 'no' from the linked-list
 	void ListLinearHeap::removeNode(size_t no) {
 		// make sure the index is correct
 		assert(no < total_number);
@@ -79,6 +85,7 @@ namespace utils {
 		}
 	}
 
+	// ListLinearHeap::modifyNode, modify the node with the index of 'no' with a new degree of 'new_key'
 	void ListLinearHeap::modifyNode(size_t no, size_t new_key) {
 		// make sure the memory access is safe
 		assert(no < total_number);
@@ -93,6 +100,7 @@ namespace utils {
 		addNode(no, new_key);
 	}
 
+	// ListLinearHeap::top, get a pair of (<no>, <degree>) of the top element like most heaps
 	std::pair<size_t, size_t> ListLinearHeap::top() const {
 		// the heap shouldn't be empty
 		assert(total_size);
@@ -102,6 +110,7 @@ namespace utils {
 		return std::make_pair(first_node->no, first_node->key);
 	}
 
+	// ListLinearHeap::pop, pop out the top element like most heaps
 	void ListLinearHeap::pop() {
 		// the heap shouldn't be empty
 		assert(total_size);
@@ -110,10 +119,12 @@ namespace utils {
 		removeNode(heads[lowest_index].next->no);
 	}
 
+	// ListLinearHeap::size, return the number of elements in the linked list
 	size_t ListLinearHeap::size() const {
 		return total_size;
 	}
 
+	// ListLinearHeap::empty, return true iff there's no element in the linked list
 	bool ListLinearHeap::empty() const {
 		return total_size == 0;
 	}

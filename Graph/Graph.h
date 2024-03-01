@@ -12,8 +12,6 @@
 #include <unordered_set>
 #include <vector>
 
-#define DEBUG
-
 namespace graph
 {
 	// 'struct Edge' defines the structure to store an edge
@@ -73,10 +71,8 @@ namespace graph
 		// merge other_graph into the current graph
 		void mergeGraph(const Graph& other_graph);
 
-#ifdef DEBUG
 		// print out all edges of the graph
 		void printGraph() const;
-#endif // DEBUG
 
 		/************** Below implement Peeling Algorithm **************/
 

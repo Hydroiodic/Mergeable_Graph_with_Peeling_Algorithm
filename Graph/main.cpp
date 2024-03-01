@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cstdio>
 
+// redirectStdin: to redirect stdin to the input file, return false if open failed
 bool redirectStdin(const char* file_name) {
 	// whether the file exits or not
 	if (FILE* file = fopen(file_name, "r")) {
@@ -26,6 +27,7 @@ bool redirectStdin(const char* file_name) {
 	}
 }
 
+// addEdge: input "A <graph number> <from> <to> <value>"
 void addEdge(graph_t* test_graph, size_t index, 
 	size_t from, size_t to, std::string value) {
 	if (test_graph[index].addEdge(from, to, value)) {
@@ -38,6 +40,7 @@ void addEdge(graph_t* test_graph, size_t index,
 	}
 }
 
+// deleteEdge: input "D <graph number> <from> <to>"
 void deleteEdge(graph_t* test_graph, size_t index, size_t from, size_t to) {
 	if (test_graph[index].deleteEdge(from, to)) {
 		std::cout << "Delete edges from " << from << " to " << to <<
@@ -49,21 +52,25 @@ void deleteEdge(graph_t* test_graph, size_t index, size_t from, size_t to) {
 	}
 }
 
+// peeling: input "G <graph number>"
 void peeling(graph_t* test_graph, size_t index) {
 	test_graph[index].peeling();
 	std::cout << "Apply Peeling Algorithm to calculate core_number in graph " << index << ".\n";
 }
 
+// mergeGraph: input "M <the merging graph> <the merged graph>"
 void mergeGraph(graph_t* test_graph, size_t index, size_t other_index) {
 	test_graph[index].mergeGraph(test_graph[other_index]);
 	std::cout << "Merge graph " << other_index << " into graph " << index << ".\n";
 }
 
+// printGraph: input "P <graph number>"
 void printGraph(graph_t* test_graph, size_t index) {
 	std::cout << "Below is the information about graph " << index << ":\n";
 	test_graph[index].printGraph();
 }
 
+// getKCoreGraph: input "S <graph number> <sub-graph number> <k-value>"
 void getKCoreGraph(graph_t* test_graph, size_t index, size_t other_index, size_t k) {
 	std::cout << "Assign the " << k << "-core sub-graph of graph " 
 		<< index << " into graph " << other_index << ".\n";
@@ -80,6 +87,7 @@ int main(int argc, char* argv[])
 		}
 		else {
 			std::cout << "Failed to open file \"" << argv[1] << "\", use terminal to input instead.\n";
+			std::cout << "\tUsage: <executable file> <filename>\n";
 		}
 	}
 
@@ -137,6 +145,7 @@ int main(int argc, char* argv[])
 			break;
 
 		case 'Q': case 'q':
+			// the inputting process ends
 			goto End;
 
 		case 'S': case 's':

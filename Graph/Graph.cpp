@@ -22,6 +22,7 @@ namespace graph {
 		/* there's nothing to do here up to now */
 	}
 
+	// Graph::addEdgeInner, add only an single edge into the graph and update the state then
 	template <typename vertex_type, typename edge_type>
 	bool Graph<vertex_type, edge_type>::addEdgeInner(size_t from, size_t to, const edge_type& value) {
 		// judge whether the edge exists or not
@@ -55,6 +56,9 @@ namespace graph {
 		return true;
 	}
 	
+	// Graph::deleteEdgeInner, delete only an single edge from the graph and update the state then
+	//     Actually, the edge isn't truly deleted but only removed from the linked list. The index of 
+	//     the "deleted" edge will be saved for later insertion
 	template <typename vertex_type, typename edge_type>
 	bool Graph<vertex_type, edge_type>::deleteEdgeInner(size_t from, size_t to) {
 		// get the index of the edge
@@ -87,6 +91,7 @@ namespace graph {
 		return true;
 	}
 
+	// Graph::nextEdgeIndex, get the next index to insert an edge by reusing the deleted space
 	template <typename vertex_type, typename edge_type>
 	size_t Graph<vertex_type, edge_type>::nextEdgeIndex() {
 		if (next_index.empty()) {
@@ -101,6 +106,7 @@ namespace graph {
 		}
 	}
 
+	// Graph::getEdgeIndexByKey, return the indexes of an edge and the edge before it searched by key
 	template <typename vertex_type, typename edge_type>
 	std::pair<size_t, size_t> Graph<vertex_type, edge_type>::getEdgeIndexByKey(
 		const vertex_type& from, const vertex_type& to) const {
@@ -118,6 +124,7 @@ namespace graph {
 		}
 	}
 
+	// Graph::getEdgeIndexByIndex, return the indexes of an edge and the edge before it searched by vertex indexes
 	template <typename vertex_type, typename edge_type>
 	std::pair<size_t, size_t> Graph<vertex_type, edge_type>::getEdgeIndexByIndex(
 		size_t from_index, size_t to_index) const {
@@ -125,7 +132,7 @@ namespace graph {
 		assert(from_index < tail_index.size() && to_index < tail_index.size());
 
 		// search every edge from 'from_index'
-		for (int cur_index = tail_index[from_index], prev_index = -1; cur_index != -1;
+		for (size_t cur_index = tail_index[from_index], prev_index = -1; cur_index != -1;
 			prev_index = cur_index, cur_index = edges[cur_index].prev) {
 			// if found
 			if (edges[cur_index].to == to_index) {
@@ -137,6 +144,7 @@ namespace graph {
 		return std::make_pair<size_t, size_t>(-1, -1);
 	}
 
+	// Graph::getKeyIndex, return the index of a key, if non-existent, return create ? <created one> : -1
 	template <typename vertex_type, typename edge_type>
 	size_t Graph<vertex_type, edge_type>::getKeyIndex(const vertex_type& key, bool create) {
 		// get the iterator within the map
@@ -172,6 +180,7 @@ namespace graph {
 
 	/****************** Below are public functions ******************/
 
+	// Graph::addEdge, add an edge from 'from' to 'to'. if double_side, the opposite edge will also be added
 	template <typename vertex_type, typename edge_type>
 	bool Graph<vertex_type, edge_type>::addEdge(const vertex_type& from, 
 		const vertex_type& to, const edge_type& value, bool double_side) {
@@ -194,6 +203,7 @@ namespace graph {
 		return return_value;
 	}
 	
+	// Graph::deleteEdge, delete an edge from 'from' to 'to'. if double_side, the opposite edge will also be deleted
 	template <typename vertex_type, typename edge_type>
 	bool Graph<vertex_type, edge_type>::deleteEdge(const vertex_type& from, 
 		const vertex_type& to, bool double_side) {
@@ -218,6 +228,7 @@ namespace graph {
 		return return_value;
 	}
 
+	// Graph::mergeGraph, merge 'other_graph' into this graph by adding edges one by one
 	template <typename vertex_type, typename edge_type>
 	void Graph<vertex_type, edge_type>::mergeGraph(const Graph& other_graph) {
 		// add edges in the other graph one by one
@@ -238,7 +249,7 @@ namespace graph {
 		}
 	}
 
-#ifdef DEBUG
+	// Graph::printGraph, print the detailed edges and pre-calculated core_numbers
 	template <typename vertex_type, typename edge_type>
 	void Graph<vertex_type, edge_type>::printGraph() const {
 		// iterate through all tails
@@ -256,12 +267,11 @@ namespace graph {
 			}
 		}
 
-		for (int i = 0; i < degrees.size(); ++i) {
+		for (size_t i = 0; i < degrees.size(); ++i) {
 			std::cout << "The vertex " << index_to_key[i] << " has a core number of "
 				<< core_numbers[i] << '\n';
 		}
 	}
-#endif // DEBUG
 
 } // namespace graph
 
@@ -269,6 +279,7 @@ namespace graph {
 
 	/************** Below implement Peeling Algorithm ***************/
 
+	// Graph::peeling, calculate core_number of each vertex using Peeling Algorithm
 	template <typename vertex_type, typename edge_type>
 	void Graph<vertex_type, edge_type>::peeling() {
 		// resize the vector to fit the requirement of capacity
@@ -283,7 +294,7 @@ namespace graph {
 			key_to_index.size() == degrees.size());
 
 		// add every node into the heap
-		for (int i = 0; i < degrees.size(); ++i) {
+		for (size_t i = 0; i < degrees.size(); ++i) {
 			heap.addNode(i, degrees[i]);
 		}
 		
@@ -305,7 +316,7 @@ namespace graph {
 			core_numbers[top_element.first] = core;
 
 			// iterate all adjacent vertex
-			for (int cur_index = tail_index[top_element.first]; cur_index != -1;
+			for (size_t cur_index = tail_index[top_element.first]; cur_index != -1;
 				cur_index = edges[cur_index].prev) {
 				// decrease the degree of the adjacent node by 1
 				heap.modifyNode(edges[cur_index].to, heap.inquire(edges[cur_index].to) - 1);
@@ -313,6 +324,8 @@ namespace graph {
 		}
 	}
 
+	// Graph::getKCoreGraph, get the k-core sub-graph using the pre-calculated core_numbers
+	// ATTENTION! this function needs to be run after running Graph::peeling first to take effect
 	template <typename vertex_type, typename edge_type>
 	Graph<vertex_type, edge_type> Graph<vertex_type, edge_type>::getKCoreGraph(size_t k) const {
 		// find all nodes that has a larger core_number than k
