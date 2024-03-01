@@ -48,10 +48,45 @@ namespace graph {
 		else {
 			edges[tail_index[from]] = new_edge;
 		}
+		
+		// increase the degree of the vertex by 1
+		++degrees[from];
 
 		return true;
 	}
 	
+	template <typename vertex_type, typename edge_type>
+	bool Graph<vertex_type, edge_type>::deleteEdgeInner(size_t from, size_t to) {
+		// get the index of the edge
+		std::pair<size_t, size_t> edge_index = getEdgeIndexByIndex(from, to);
+
+		// if not found
+		if (edge_index.first == -1) {
+			return false;
+		}
+		// if the edge is on the back of each linked list
+		else if (edge_index.second == -1) {
+			// the index of 'from'
+			size_t from_index = edges[edge_index.first].from;
+
+			// "delete" the edge
+			tail_index[from_index] = edges[edge_index.first].prev;
+			next_index.push_back(edge_index.first);
+		}
+		// if the edge is in the middle of each linked list
+		else {
+			// "delete" the edge
+			edges[edge_index.second].prev = edges[edge_index.first].prev;
+			next_index.push_back(edge_index.first);
+		}
+
+		// decrease the degree of the vertex by 1
+		--degrees[from];
+
+		// delete successfully
+		return true;
+	}
+
 	template <typename vertex_type, typename edge_type>
 	size_t Graph<vertex_type, edge_type>::nextEdgeIndex() {
 		if (next_index.empty()) {
@@ -86,8 +121,10 @@ namespace graph {
 	template <typename vertex_type, typename edge_type>
 	std::pair<size_t, size_t> Graph<vertex_type, edge_type>::getEdgeIndexByIndex(
 		size_t from_index, size_t to_index) const {
+		// make sure the memory access is safe
+		assert(from_index < tail_index.size() && to_index < tail_index.size());
+
 		// search every edge from 'from_index'
-		
 		for (int cur_index = tail_index[from_index], prev_index = -1; cur_index != -1;
 			prev_index = cur_index, cur_index = edges[cur_index].prev) {
 			// if found
@@ -101,13 +138,16 @@ namespace graph {
 	}
 
 	template <typename vertex_type, typename edge_type>
-	size_t Graph<vertex_type, edge_type>::getKeyIndex(const vertex_type& key) {
+	size_t Graph<vertex_type, edge_type>::getKeyIndex(const vertex_type& key, bool create) {
 		// get the iterator within the map
 		typename std::unordered_map<vertex_type, size_t>::iterator key_it = key_to_index.find(key);
 
 		size_t index;
 		// the key isn't found
 		if (key_it == key_to_index.end()) {
+			// if create == false, return -1 directly
+			if (!create) return -1;
+
 			// assign this key with a new index
 			index = key_to_index.size();
 
@@ -115,15 +155,17 @@ namespace graph {
 			key_to_index[key] = key_to_index.size();
 			index_to_key.push_back(key);
 			tail_index.push_back(-1);
+			degrees.push_back(0);
 		}
 		// the key is found, then return its index
 		else {
 			index = key_it->second;
 		}
 
-		// 'key_to_index.size() = index_to_key.size() = tail_index.size()' is always true
+		// 'key_to_index.size() = index_to_key.size() = tail_index.size() = degrees.size()' is always true
 		assert(key_to_index.size() == index_to_key.size() && 
-			key_to_index.size() == tail_index.size());
+			key_to_index.size() == tail_index.size() && 
+			key_to_index.size() == degrees.size());
 
 		return index;
 	}
@@ -150,33 +192,27 @@ namespace graph {
 	}
 	
 	template <typename vertex_type, typename edge_type>
-	bool Graph<vertex_type, edge_type>::deleteEdge(const vertex_type& from, const vertex_type& to) {
-		// get the index of the edge
-		std::pair<size_t, size_t> edge_index = getEdgeIndexByKey(from, to);
+	bool Graph<vertex_type, edge_type>::deleteEdge(const vertex_type& from, 
+		const vertex_type& to, bool double_side) {
+		// get the index of the two vertexes
+		size_t from_index = getKeyIndex(from, false), to_index = getKeyIndex(to, false);
 
-		// if not found
-		if (edge_index.first == -1) {
+		// if any of them is not found
+		if (from_index == -1 || to_index == -1) {
 			return false;
 		}
-		else if (edge_index.second == -1) {
-			// the index of 'from'
-			size_t from_index = edges[edge_index.first].from;
 
-			// "delete" the edge
-			tail_index[from_index] = edges[edge_index.first].prev;
-			next_index.push_back(edge_index.first);
+		// if return_value is true, the edge has been deleted correctly
+		bool return_value = false;
 
-			// delete successfully
-			return true;
+		// delete the edge from 'from' to 'to'
+		return_value |= deleteEdgeInner(from_index, to_index);
+		// delete double-side edges
+		if (double_side) {
+			return_value |= deleteEdgeInner(to_index, from_index);
 		}
-		else {
-			// "delete" the edge
-			edges[edge_index.second].prev = edges[edge_index.first].prev;
-			next_index.push_back(edge_index.first);
 
-			// delete successfully
-			return true;
-		}
+		return return_value;
 	}
 
 	template <typename vertex_type, typename edge_type>
@@ -217,7 +253,62 @@ namespace graph {
 					<< index_to_key[edges[cur_index].to] << " values " << edges[cur_index].value << '\n';
 			}
 		}
+
+		for (int i = 0; i < degrees.size(); ++i) {
+			std::cout << "The vertex " << index_to_key[i] << " has a core number of "
+				<< core_numbers[i] << '\n';
+		}
 	}
 #endif // DEBUG
 
-} // namespace Graph
+} // namespace graph
+
+namespace graph {
+
+	/************** Below implement Peeling Algorithm ***************/
+
+	template <typename vertex_type, typename edge_type>
+	void Graph<vertex_type, edge_type>::peeling() {
+		// resize the vector to fit the requirement of capacity
+		core_numbers.resize(tail_index.size());
+
+		// create a ListLinearHeap to fetch the node one by one
+		utils::ListLinearHeap heap(tail_index.size());
+
+		// 'key_to_index.size() = index_to_key.size() = tail_index.size() = degrees.size()' is always true
+		assert(key_to_index.size() == index_to_key.size() &&
+			key_to_index.size() == tail_index.size() &&
+			key_to_index.size() == degrees.size());
+
+		// add every node into the heap
+		for (int i = 0; i < degrees.size(); ++i) {
+			heap.addNode(i, degrees[i]);
+		}
+		
+		// apply Peeling Algorithm
+		size_t core = 0;
+		std::unordered_set<size_t> vertex_set;
+
+		// fetch the top vertex and then modify those adjacent vertexes
+		while (!heap.empty()) {
+			// the first element of the pair is 'no', while the second is 'degree'
+			std::pair<size_t, size_t> top_element = heap.top();
+			// pop out the top element
+			heap.pop();
+
+			// modify 'core' and update the core_number of the vertex
+			if (top_element.second > core) {
+				core = top_element.second;
+			}
+			core_numbers[top_element.first] = core;
+
+			// iterate all adjacent vertex
+			for (int cur_index = tail_index[top_element.first]; cur_index != -1;
+				cur_index = edges[cur_index].prev) {
+				// decrease the degree of the adjacent node by 1
+				heap.modifyNode(edges[cur_index].to, heap.inquire(edges[cur_index].to) - 1);
+			}
+		}
+	}
+
+} // namespace graph

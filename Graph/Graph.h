@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "ListLinearHeap.h"
 #include <cassert>
 #include <iostream>
 #include <stddef.h>
@@ -36,7 +37,7 @@ namespace graph
 		// use hash-method to map vertex_type to their indexes
 		std::unordered_map<vertex_type, size_t> key_to_index;
 		std::vector<vertex_type> index_to_key;
-		size_t getKeyIndex(const vertex_type& key);
+		size_t getKeyIndex(const vertex_type& key, bool create = true);
 
 		// use hash-method to judge whether an edge exists or not
 		std::unordered_set<std::string> edge_set;
@@ -46,8 +47,9 @@ namespace graph
 		std::vector<Edge<vertex_type, edge_type>> edges;
 		std::vector<size_t> tail_index;
 
-		// add an edge from 'from' to 'to' into the vector 'edges'
+		// add or delete an edge from 'from' to 'to' within the vector 'edges'
 		bool addEdgeInner(size_t from, size_t to, const edge_type& value);
+		bool deleteEdgeInner(size_t from, size_t to);
 
 		// get the next index to insert
 		std::vector<size_t> next_index;
@@ -65,17 +67,31 @@ namespace graph
 		// the basic method of a graph
 		bool addEdge(const vertex_type& from, const vertex_type& to, 
 			const edge_type& value, bool double_side = true);
-		bool deleteEdge(const vertex_type& from, const vertex_type& to);
+		bool deleteEdge(const vertex_type& from, const vertex_type& to, 
+			bool double_side = true);
 
 		// merge other_graph into the current graph
 		void mergeGraph(const Graph& other_graph);
 
 #ifdef DEBUG
+		// print out all edges of the graph
 		void printGraph() const;
 #endif // DEBUG
 
+		/************** Below implement Peeling Algorithm **************/
+
+	private:
+		// use a vector to store the core number of each vertex
+		std::vector<size_t> core_numbers;
+
+		// use a vector to store the degrees of each vertex
+		std::vector<size_t> degrees;
+
+	public:
+		void peeling();
+
 	};
-} // namespace Graph
+} // namespace graph
 
 // definition and implementation of a template class must be within one file
 #include "Graph.cpp"

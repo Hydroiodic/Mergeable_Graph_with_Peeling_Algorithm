@@ -5,8 +5,8 @@ namespace utils {
 	ListLinearHeap::ListLinearHeap(size_t N) : total_number(N + 1) {
 		// actually the maximum possible degree of a node is N - 1 
 		//     (repeated edge and self-circled edge not considered)
-		this->heads = new ListLinearHeapNode[N + 1];
-		this->nodes = new ListLinearHeapNode[N + 1];
+		this->heads = new ListLinearHeapNode[N + 1]{};
+		this->nodes = new ListLinearHeapNode[N + 1]{};
 		this->size_of_each_list = new size_t[N + 1]{};
 	}
 
@@ -14,6 +14,13 @@ namespace utils {
 		delete [] this->heads;
 		delete [] this->nodes;
 		delete [] this->size_of_each_list;
+	}
+
+	size_t ListLinearHeap::inquire(size_t no) const {
+		// make sure the memory access is safe
+		assert(no < total_number);
+
+		return nodes[no].key;
 	}
 
 	void ListLinearHeap::addNode(size_t no, size_t degree) {
@@ -25,8 +32,8 @@ namespace utils {
 		nodes[no].key = degree;
 
 		// connect this node into the linked list
-		nodes[no].prev = &heads[no];
-		nodes[no].next = heads[no].next;
+		nodes[no].prev = &heads[degree];
+		nodes[no].next = heads[degree].next;
 
 		if (heads[degree].next) {
 			heads[degree].next = &nodes[no];
@@ -70,8 +77,13 @@ namespace utils {
 	}
 
 	void ListLinearHeap::modifyNode(size_t no, size_t new_key) {
-		// make sure the index is correct
+		// make sure the memory access is safe
 		assert(no < total_number);
+
+		// if the node has already been removed from the linked list
+		if (nodes[no].prev == nullptr && nodes[no].next == nullptr) {
+			return;
+		}
 
 		// remove first and add then
 		removeNode(no);
@@ -97,5 +109,9 @@ namespace utils {
 
 	size_t ListLinearHeap::size() const {
 		return total_size;
+	}
+
+	bool ListLinearHeap::empty() const {
+		return total_size == 0;
 	}
 }

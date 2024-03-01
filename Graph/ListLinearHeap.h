@@ -8,7 +8,7 @@ namespace utils {
 	struct ListLinearHeapNode
 	{
 		// "key" is the degree of the vertex, while "no" is the index of the vertex
-		size_t key = -1, no = -1;
+		size_t key = size_t(-1), no = size_t(-1);
 
 		// save the previous and the next nodes
 		ListLinearHeapNode* prev = nullptr, * next = nullptr;
@@ -61,6 +61,9 @@ namespace utils {
 		ListLinearHeap(size_t N);
 		~ListLinearHeap();
 
+		// inquire the key value of a node
+		size_t inquire(size_t no) const;
+
 		// this function actually initialize a node
 		void addNode(size_t no, size_t degree);
 
@@ -78,5 +81,8 @@ namespace utils {
 
 		// return the size of all element in the linked list
 		size_t size() const;
+
+		// return true if the linked list is empty
+		bool empty() const;
 	};
 }
