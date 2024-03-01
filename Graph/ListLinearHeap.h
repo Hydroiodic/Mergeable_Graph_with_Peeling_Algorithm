@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <cassert>
+#include <cstddef>
 
 namespace utils {
 
@@ -35,7 +36,7 @@ namespace utils {
 	 *     with the same key. However the disadvantage is that space used by this data structure is relatively
 	 *     large.
 	 * 
-	/********************* class ListLinearHeap *********************/
+	/ ******************** class ListLinearHeap *********************/
 
 	class ListLinearHeap
 	{

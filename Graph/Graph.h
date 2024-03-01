@@ -6,7 +6,7 @@
 #include "ListLinearHeap.h"
 #include <cassert>
 #include <iostream>
-#include <stddef.h>
+#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -97,4 +97,6 @@ namespace graph
 
 // these types may change to meet our needs
 // ATTENTION! the first parameter-type must be hashable!
-using graph_t = graph::Graph<uint64_t, std::string>;
+using vertex_type = int;
+using edge_type = std::string;
+using graph_t = graph::Graph<vertex_type, edge_type>;

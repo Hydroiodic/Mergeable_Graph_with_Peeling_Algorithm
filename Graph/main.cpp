@@ -5,8 +5,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Graph.h"
-#include <iostream>
+#include <cstddef>
 #include <cstdio>
+#include <iostream>
 
 // redirectStdin: to redirect stdin to the input file, return false if open failed
 bool redirectStdin(const char* file_name) {
@@ -29,7 +30,7 @@ bool redirectStdin(const char* file_name) {
 
 // addEdge: input "A <graph number> <from> <to> <value>"
 void addEdge(graph_t* test_graph, size_t index, 
-	size_t from, size_t to, std::string value) {
+	vertex_type from, vertex_type to, edge_type value) {
 	if (test_graph[index].addEdge(from, to, value)) {
 		std::cout << "Add edges from " << from << " to " << to <<
 			" or from " << to << " to " << to << " successfully!\n";
@@ -41,7 +42,7 @@ void addEdge(graph_t* test_graph, size_t index,
 }
 
 // deleteEdge: input "D <graph number> <from> <to>"
-void deleteEdge(graph_t* test_graph, size_t index, size_t from, size_t to) {
+void deleteEdge(graph_t* test_graph, size_t index, vertex_type from, vertex_type to) {
 	if (test_graph[index].deleteEdge(from, to)) {
 		std::cout << "Delete edges from " << from << " to " << to <<
 			" or from " << to << " to " << to << " successfully!\n";
@@ -90,6 +91,10 @@ int main(int argc, char* argv[])
 			std::cout << "\tUsage: <executable file> <filename>\n";
 		}
 	}
+	else {
+		std::cout << "You can execute this program with the following usage, now use terminal to input instead.\n";
+		std::cout << "\tUsage: <executable file> <filename>\n";
+	}
 
 	// total test number
 	size_t total_input_number = 10, total_graph_number = 1;
@@ -100,8 +105,13 @@ int main(int argc, char* argv[])
 
 	while (total_input_number--) {
 		// test operator
-		char op; int index, other_index;
+		char op; size_t index, other_index;
 		std::cin >> op >> index;
+
+		// the inputting process ends
+		if (op == 'Q' || op == 'q') {
+			break;
+		}
 
 		// if the input content is incorrect
 		if (std::cin.bad() || index >= total_input_number) {
@@ -112,8 +122,9 @@ int main(int argc, char* argv[])
 		}
 
 		// keys and value
-		uint64_t from, to, k;
-		std::string value;
+		vertex_type from, to;
+		edge_type value;
+		size_t k;
 
 		switch (op) {
 		case 'A': case 'a':
@@ -144,10 +155,6 @@ int main(int argc, char* argv[])
 			printGraph(test_graph, index);
 			break;
 
-		case 'Q': case 'q':
-			// the inputting process ends
-			goto End;
-
 		case 'S': case 's':
 			// assign the k-core sub-graph of graph 'index' to 'other_index'
 			// ATTENTION! please use "G" to calculate first and then use this operation
@@ -160,7 +167,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-End:
 	// release the memory
 	delete [] test_graph;
 }
